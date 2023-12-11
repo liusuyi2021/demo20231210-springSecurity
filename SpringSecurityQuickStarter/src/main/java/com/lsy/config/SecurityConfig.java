@@ -1,8 +1,10 @@
 package com.lsy.config;
 
+import com.lsy.filter.JwtAuthenticationLoginFilter;
 import com.lsy.filter.JwtAuthenticationTokenFilter;
 import com.lsy.handler.AccessDeniedHandlerImpl;
 import com.lsy.handler.AuthenticationEntryPointImpl;
+import com.lsy.handler.JwtLogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,28 +46,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     AuthenticationEntryPointImpl authenticationEntryPointImpl;
     @Resource
     AccessDeniedHandlerImpl accessDeniedHandlerImpl;
-
+    @Resource
+    JwtAuthenticationSecurityConfig jwtAuthenticationSecurityConfig;
+    @Resource
+    JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.formLogin().disable().apply(jwtAuthenticationSecurityConfig);
 
-        http.
-                csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-                .and()
-                .authorizeRequests()
+                .and().authorizeRequests()
                 //对于登录接口 允许匿名访问
                 .antMatchers("/user/login").anonymous()
                 //除上面请求外所有请求都需要鉴权
                 .anyRequest().authenticated()
 
-                .and()
-                .exceptionHandling()
+                .and().exceptionHandling()
                 //认证未通过，不允许访问，异常处理器
                 .authenticationEntryPoint(authenticationEntryPointImpl)
                 //认证通过，但是没权限处理器
                 .accessDeniedHandler(accessDeniedHandlerImpl)
 
+                .and()
+                .logout().logoutSuccessHandler(jwtLogoutSuccessHandler)
                 .and()
                 //添加过滤器
                 // .addFilterBefore(jwtAuthenticationTokenFilter, LogoutFilter.class)

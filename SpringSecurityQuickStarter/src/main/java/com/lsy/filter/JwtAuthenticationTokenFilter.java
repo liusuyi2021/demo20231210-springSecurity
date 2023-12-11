@@ -21,7 +21,7 @@ import java.util.Objects;
 
 /**
  * @ClassName JwtAuthenticationTokenFilter
- * @Description:
+ * @Description: 身份验证token过滤器
  * @Author 刘苏义
  * @Date 2023/12/10 16:11
  * @Version 1.0

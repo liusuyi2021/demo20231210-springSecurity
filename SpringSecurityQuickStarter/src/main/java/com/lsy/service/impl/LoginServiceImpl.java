@@ -19,7 +19,7 @@ import java.util.Objects;
 
 /**
  * @ClassName LoginService
- * @Description:
+ * @Description: 自定义登录业务
  * @Author 刘苏义
  * @Date 2023/12/10 15:14
  * @Version 1.0
@@ -31,24 +31,26 @@ public class LoginServiceImpl implements ILoginService {
     AuthenticationManager authenticationManager;
     @Resource
     RedisCache redisCache;
+
     @Override
     public AjaxResult login(SysUser sysUser) {
 
-        UsernamePasswordAuthenticationToken authenticationToken=new  UsernamePasswordAuthenticationToken(sysUser.getUserName(),sysUser.getPassword());
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(sysUser.getUserName(), sysUser.getPassword());
         //authustation
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        if(Objects.isNull(authenticate))
-        {
-            throw  new RuntimeException("登录失败");
+        if (Objects.isNull(authenticate)) {
+            throw new RuntimeException("登录失败");
         }
-        LoginUser user = (LoginUser)authenticate.getPrincipal();
-        String userId = user.getSysUser().getUserId().toString();
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String userId = loginUser.getSysUser().getUserId().toString();
+        //生成令牌
         String token = JwtUtil.createJWT(userId);
-        Map<String,String> map=new HashMap<>();
-        map.put("token",token);
-
-        redisCache.setCacheObject("login:"+userId,user);
-        return AjaxResult.success("登录成功",map);
+        Map<String, String> map = new HashMap<>();
+        map.put("token", token);
+        //将token存入redis
+        redisCache.setCacheObject("login:" + userId, loginUser);
+        return AjaxResult.success("登录成功", map);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class LoginServiceImpl implements ILoginService {
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         Long userId = loginUser.getSysUser().getUserId();
         //删除redis中的值
-        redisCache.deleteObject("login:"+userId);
+        redisCache.deleteObject("login:" + userId);
         return AjaxResult.success("退出成功");
     }
 }
