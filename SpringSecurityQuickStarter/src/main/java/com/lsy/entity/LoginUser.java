@@ -20,6 +20,14 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 public class LoginUser implements UserDetails {
+    /**
+     * 登录时间
+     */
+    private Long loginTime;
+    /**
+     * 过期时间
+     */
+    private Long expireTime;
 
     private SysUser sysUser;
     private List<String> permissions;

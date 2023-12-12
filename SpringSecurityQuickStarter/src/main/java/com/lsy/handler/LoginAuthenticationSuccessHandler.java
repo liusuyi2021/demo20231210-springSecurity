@@ -2,6 +2,7 @@ package com.lsy.handler;
 
 import com.alibaba.fastjson2.JSON;
 import com.lsy.entity.LoginUser;
+import com.lsy.service.impl.TokenService;
 import com.lsy.utils.AjaxResult;
 import com.lsy.utils.JwtUtil;
 import com.lsy.utils.RedisCache;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 登录成功操作
@@ -29,7 +31,8 @@ import java.util.Map;
 @Slf4j
 public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-
+    @Resource
+    TokenService tokenService;
     @Resource
     private RedisCache redisCache;
 
@@ -41,6 +44,7 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
                 httpServletRequest.getRemoteHost(), authentication.getName(), LocalDateTime.now()));
         //
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String userId = loginUser.getSysUser().getUserId().toString();
         //生成令牌
@@ -49,7 +53,8 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
         map.put("token", accessToken);
 
         //将token存入redis
-        redisCache.setCacheObject("login:" + userId,loginUser);
+        //redisCache.setCacheObject("login:" + userId, loginUser, 1, TimeUnit.MINUTES);
+        tokenService.refreshToken(loginUser);//刷新token
         ServletUtils.renderString(httpServletResponse, JSON.toJSONString(AjaxResult.success("登录成功！", map)));
 
     }

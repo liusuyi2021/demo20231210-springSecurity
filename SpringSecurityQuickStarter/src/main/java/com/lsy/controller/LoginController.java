@@ -3,10 +3,8 @@ package com.lsy.controller;
 import com.lsy.entity.SysUser;
 import com.lsy.service.impl.LoginServiceImpl;
 import com.lsy.utils.AjaxResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -24,10 +22,11 @@ public class LoginController {
     LoginServiceImpl loginService;
 
     @PostMapping("/user/login")
-    public AjaxResult login(@RequestBody SysUser sysUser)
+    public AjaxResult login(SysUser sysUser)
     {
         return loginService.login(sysUser);
     }
+
     @PostMapping("/user/logout")
     public AjaxResult logout()
     {

@@ -50,6 +50,7 @@ public class LoginServiceImpl implements ILoginService {
         map.put("token", token);
         //将token存入redis
         redisCache.setCacheObject("login:" + userId, loginUser);
+
         return AjaxResult.success("登录成功", map);
     }
 

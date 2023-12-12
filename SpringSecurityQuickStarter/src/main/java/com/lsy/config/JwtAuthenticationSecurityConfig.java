@@ -65,12 +65,12 @@ public class JwtAuthenticationSecurityConfig  extends SecurityConfigurerAdapter<
         //认证失败处理器
         filter.setAuthenticationFailureHandler(loginAuthenticationFailureHandler);
         //直接使用DaoAuthenticationProvider
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        //DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         //设置userDetailService
-        provider.setUserDetailsService(userDetailsService);
+        //provider.setUserDetailsService(userDetailsService);
         //设置加密算法
-        provider.setPasswordEncoder(passwordEncoder);
-        http.authenticationProvider(provider);
+        //provider.setPasswordEncoder(passwordEncoder);
+        //http.authenticationProvider(provider);
         //将这个过滤器添加到UsernamePasswordAuthenticationFilter之前执行
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }

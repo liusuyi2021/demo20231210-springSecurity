@@ -1,6 +1,7 @@
 package com.lsy.filter;
 
 import com.lsy.entity.LoginUser;
+import com.lsy.service.impl.TokenService;
 import com.lsy.utils.JwtUtil;
 import com.lsy.utils.RedisCache;
 import com.lsy.utils.StringUtils;
@@ -28,9 +29,11 @@ import java.util.Objects;
  */
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
-
+    @Resource
+    TokenService tokenService;
     @Resource
     RedisCache redisCache;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -52,14 +55,16 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         //从redis中获取登录的用户信息
         LoginUser loginUser = redisCache.getCacheObject("login:" + userId);
 
+        if (Objects.nonNull(loginUser)) {
+            tokenService.verifyToken(loginUser);//验证token
+        }
         //存入SecurityContextHolder
         //TODO:获取权限信息封装到authenticationToken
-        if(Objects.isNull(loginUser))
-        {
+        if (Objects.isNull(loginUser)) {
             throw new RuntimeException("token无效");
         }
         SecurityContext context = SecurityContextHolder.getContext();
-        UsernamePasswordAuthenticationToken authenticationToken=new UsernamePasswordAuthenticationToken(loginUser,null,loginUser.getAuthorities());
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         context.setAuthentication(authenticationToken);
         //放行
         filterChain.doFilter(request, response);

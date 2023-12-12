@@ -1,11 +1,7 @@
 package com.lsy.config;
 
-import com.lsy.filter.JwtAuthenticationLoginFilter;
 import com.lsy.filter.JwtAuthenticationTokenFilter;
-import com.lsy.handler.AccessDeniedHandlerImpl;
-import com.lsy.handler.AuthenticationEntryPointImpl;
-import com.lsy.handler.JwtLogoutSuccessHandler;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lsy.handler.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -50,29 +46,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     JwtAuthenticationSecurityConfig jwtAuthenticationSecurityConfig;
     @Resource
     JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
+
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.formLogin().disable().apply(jwtAuthenticationSecurityConfig);
-
-        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
-                .and().authorizeRequests()
+        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.authorizeRequests()
                 //对于登录接口 允许匿名访问
-                .antMatchers("/user/login").anonymous()
+                .antMatchers("/login").permitAll()
                 //除上面请求外所有请求都需要鉴权
-                .anyRequest().authenticated()
-
-                .and().exceptionHandling()
+                .anyRequest().authenticated();
+        http.exceptionHandling()
                 //认证未通过，不允许访问，异常处理器
                 .authenticationEntryPoint(authenticationEntryPointImpl)
                 //认证通过，但是没权限处理器
-                .accessDeniedHandler(accessDeniedHandlerImpl)
+                .accessDeniedHandler(accessDeniedHandlerImpl);
 
-                .and()
-                .logout().logoutSuccessHandler(jwtLogoutSuccessHandler)
-                .and()
-                //添加过滤器
-                // .addFilterBefore(jwtAuthenticationTokenFilter, LogoutFilter.class)
-                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.logout().logoutSuccessHandler(jwtLogoutSuccessHandler);
+        //添加过滤器
+        http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 }
