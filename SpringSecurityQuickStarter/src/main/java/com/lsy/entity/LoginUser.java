@@ -78,6 +78,6 @@ public class LoginUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return sysUser.getStatus() == 1;
+        return sysUser.getStatus() == 0;
     }
 }
